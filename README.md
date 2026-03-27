@@ -8,7 +8,7 @@ Open `prompt-builder.html` in any browser and start building.
 
 **Guided wizard** -- 9-step flow from role definition to final prompt, with model-specific tips at each step.
 
-**13 model profiles** -- Claude (Opus, Sonnet, Haiku), GPT-4.1, GPT-4o, Gemini 2.0 (Flash, Pro), Llama 3, Mistral, Mixtral, and custom. Each profile controls prompt structure (XML tags, Markdown, plain text), best practice hints, and context window info.
+**20+ model profiles** -- Claude (Opus, Sonnet, Haiku), GPT-4.1/4o/o3/o4-mini, Gemini 2.5/2.0, Llama 4/3, Mistral/Codestral, DeepSeek V3/R1, Qwen, Phi-4, and custom. Each profile controls prompt structure (XML tags, Markdown, plain text), best practice hints, and context window info.
 
 **10 templates** -- Pre-configured starting points for common use cases:
 - Code Review, Text Rewrite, Summarization
@@ -25,9 +25,11 @@ Open `prompt-builder.html` in any browser and start building.
 
 **JSON Schema builder** -- Visual field editor that generates JSON Schema (draft-07) and embeds it in the prompt. Export as `.json`.
 
-**10-language output** -- Prompt structural text and checklist items translated to English, Norwegian, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean.
+**10-language output** -- Prompt structural text, checklist items, and template content translated to English, Norwegian, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean. Switching language updates everything live.
 
-**Two modes** -- Chat mode (single combined prompt for browser UIs) and API mode (separate system/user messages).
+**Two modes** -- Chat mode (single combined prompt for browser UIs) and API mode (separate system/user messages with input placeholder).
+
+**Copy & Open** -- Copies the finished prompt and opens the selected model's web interface (Claude.ai, ChatGPT, Gemini, DeepSeek, Mistral) in a new tab. Just paste.
 
 **Live preview** -- Real-time prompt preview with character/token estimate, section copy, and full export as `.txt`.
 

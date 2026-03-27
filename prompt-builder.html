@@ -239,7 +239,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
       <p class="step-desc">Choose your usage mode, output language, and target model.</p>
 
       <div class="setup-section">
-        <div style="display:flex;align-items:center;justify-content:space-between"><h3>Start from a template <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(optional)</span></h3><button class="btn" id="btn-reset" style="font-size:12px;padding:4px 12px;display:none" onclick="resetAll()">Reset all</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between"><h3>Start from a template <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(optional)</span></h3><button class="btn" id="btn-reset" style="font-size:12px;padding:4px 12px" onclick="resetAll()">Reset all</button></div>
         <p>Pre-fills role, task, constraints and style. You can edit everything afterwards.</p>
         <div class="tpl-grid" id="template-grid"></div>
       </div>
@@ -348,7 +348,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans
         <div class="preview-section" id="out-system-section"><div class="preview-section-header"><h4 id="out-system-label">System Prompt</h4><button class="btn-copy" onclick="copyToClipboard('system','out-copy-system')" id="out-copy-system">Copy</button></div><div class="preview-block" id="out-system"></div></div>
         <div class="preview-section" id="out-user-section"><div class="preview-section-header"><h4>User Prompt</h4><button class="btn-copy" onclick="copyToClipboard('user','out-copy-user')" id="out-copy-user">Copy</button></div><div class="preview-block" id="out-user"></div></div>
         <div class="preview-section" id="out-schema-section" style="display:none"><div class="preview-section-header"><h4>JSON Schema</h4><button class="btn-copy" onclick="copyToClipboard('schema','out-copy-schema')" id="out-copy-schema">Copy</button></div><div class="preview-block" id="out-schema"></div></div>
-        <div class="export-bar"><button class="btn btn-primary" onclick="copyToClipboard('full',null)">Copy everything</button><button class="btn" onclick="downloadFile('txt')">Download .txt</button><button class="btn" id="btn-dl-schema" onclick="downloadFile('schema')" style="display:none">Download schema</button></div>
+        <div class="export-bar"><button class="btn btn-primary" onclick="copyToClipboard('full',null)">Copy everything</button><button class="btn btn-primary" id="btn-copy-open" onclick="copyAndOpen()" style="display:none">Copy &amp; Open</button><button class="btn" onclick="downloadFile('txt')">Download .txt</button><button class="btn" id="btn-dl-schema" onclick="downloadFile('schema')" style="display:none">Download schema</button></div>
       </div>
     </div>
 
@@ -519,6 +519,20 @@ const MODEL_PROFILES = {
     output:["Specify desired format."],constraints:["Write clear constraints."],fewShot:["1-3 examples help most models."]})
 };
 
+const MODEL_URLS={
+  "claude-opus-4":"https://claude.ai/new","claude-sonnet-4":"https://claude.ai/new","claude-haiku-3.5":"https://claude.ai/new",
+  "gpt-4.1":"https://chatgpt.com/","gpt-4.1-mini":"https://chatgpt.com/","gpt-4.1-nano":"https://chatgpt.com/",
+  "o3":"https://chatgpt.com/","o4-mini":"https://chatgpt.com/","gpt-4o":"https://chatgpt.com/","gpt-4o-mini":"https://chatgpt.com/",
+  "gemini-2.5-pro":"https://gemini.google.com/app","gemini-2.5-flash":"https://gemini.google.com/app","gemini-2.0-flash":"https://gemini.google.com/app",
+  "deepseek-v3":"https://chat.deepseek.com/","deepseek-r1":"https://chat.deepseek.com/",
+  "mistral-large":"https://chat.mistral.ai/","mistral-small":"https://chat.mistral.ai/","codestral":"https://chat.mistral.ai/"
+};
+function getModelUrl(){return MODEL_URLS[state.selectedModel]||null}
+function copyAndOpen(){
+  const p=buildPrompt();const txt=state.interactionMode==="chat"?p.systemPrompt:[p.systemPrompt,p.userPrompt].filter(Boolean).join("\n\n---\n\n");
+  navigator.clipboard.writeText(txt).then(()=>{const url=getModelUrl();if(url)window.open(url,"_blank")});
+}
+
 /* ============================================================ PROMPT BUILDERS ============================================================ */
 function buildClaudeSystem(f,cl){const p=[];if(f.role)p.push(`<role>\n${f.role}\n</role>`);const i=[];if(f.task)i.push(f.task);if(f.outputFormat!=="markdown")i.push(`Output format: ${fmtLabel(f.outputFormat)}.`);if(f.outputLength)i.push(`Length: ${lenLabel(f.outputLength)}.`);if(f.tone)i.push(`Tone: ${f.tone}.`);if(i.length)p.push(`<instructions>\n${i.join("\n")}\n</instructions>`);if(f.constraints||cl){p.push(`<rules>\n${[f.constraints,cl].filter(Boolean).join("\n")}\n</rules>`)}if(f.jsonSchema)p.push(`<output_schema>\n${JSON.stringify(f.jsonSchema,null,2)}\n</output_schema>`);if(f.fewShotExamples&&f.fewShotExamples.length){const e=f.fewShotExamples.filter(x=>x.input.trim()||x.output.trim()).map(x=>`<example>\n<input>\n${x.input}\n</input>\n<output>\n${x.output}\n</output>\n</example>`).join("\n");if(e)p.push(`<examples>\n${e}\n</examples>`)}return p.join("\n\n")}
 function buildClaudeUser(f){const p=[];if(f.context)p.push(`<context>\n${f.context}\n</context>`);if(f.inputSpec)p.push(`<input>\n${f.inputSpec}\n</input>`);return p.join("\n\n")}
@@ -571,12 +585,12 @@ function renderBestPractices(){const c=document.getElementById("best-practices-c
 function startWizard(){state.wizardStarted=true;document.getElementById("intro-page").classList.add("hidden");document.getElementById("steps-bar").classList.remove("hidden");document.getElementById("main-content").classList.remove("hidden");renderStepsBar();renderWizardStep();updateHints();renderModeNotices();renderChecklist();renderFewShotExamples();renderPreview();updateModelLabel()}
 
 /* ============================================================ SETUP ============================================================ */
-function setInteractionMode(m){state.interactionMode=m;document.getElementById("mode-chat").classList.toggle("selected",m==="chat");document.getElementById("mode-api").classList.toggle("selected",m==="api");renderModeNotices();renderChecklist();renderPreview();renderStepsBar()}
+function setInteractionMode(m){state.interactionMode=m;document.getElementById("mode-chat").classList.toggle("selected",m==="chat");document.getElementById("mode-api").classList.toggle("selected",m==="api");renderModeNotices();renderChecklist();renderConstraints();renderOutputStyle();renderPreview();renderStepsBar();if(state.currentStep===STEPS.length)renderOutputStep()}
 function renderModeNotices(){const el=document.getElementById("mode-notice-role");if(!el)return;el.innerHTML=state.interactionMode==="chat"?'<div class="mode-notice"><strong>Chat mode:</strong> Everything will be combined into a single message.</div>':"";const sl=document.getElementById("system-prompt-label");const us=document.getElementById("preview-user-section");if(state.interactionMode==="chat"){sl.textContent="Combined Prompt";us.style.display="none"}else{sl.textContent="System Prompt";us.style.display="block"}}
 
-function renderLangGrid(){const g=document.getElementById("lang-grid");g.innerHTML="";LANGUAGES.forEach(l=>{const btn=document.createElement("button");btn.className="lang-btn"+(l.id===state.selectedLang?" selected":"");btn.innerHTML=`${l.flag?`<span class="flag">${l.flag}</span>`:""}${l.label}`;btn.onclick=()=>{state.selectedLang=l.id;document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");renderPreview()};g.appendChild(btn)})}
+function renderLangGrid(){const g=document.getElementById("lang-grid");g.innerHTML="";LANGUAGES.forEach(l=>{const btn=document.createElement("button");btn.className="lang-btn"+(l.id===state.selectedLang?" selected":"");btn.innerHTML=`${l.flag?`<span class="flag">${l.flag}</span>`:""}${l.label}`;btn.onclick=()=>{state.selectedLang=l.id;document.querySelectorAll(".lang-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");if(state.selectedTemplate){const t=TEMPLATES.find(x=>x.id===state.selectedTemplate);if(t){const f=getTemplateFields(t);["role","task","tone"].forEach(k=>{if(f[k]!==undefined){state.fields[k]=f[k];const el=document.getElementById("field-"+k);if(el)el.value=f[k]}})}}renderPreview();if(state.currentStep===STEPS.length)renderOutputStep()};g.appendChild(btn)})}
 
-function selectModel(id){state.selectedModel=id;document.querySelectorAll(".model-card").forEach(c=>c.classList.toggle("selected",c.dataset.model===id));updateHints();renderChecklist();renderPreview();updateModelLabel();renderStepsBar()}
+function selectModel(id){state.selectedModel=id;document.querySelectorAll(".model-card").forEach(c=>c.classList.toggle("selected",c.dataset.model===id));updateHints();renderChecklist();renderConstraints();renderOutputStyle();renderPreview();updateModelLabel();renderStepsBar();if(state.currentStep===STEPS.length)renderOutputStep()}
 function renderModelCards(){const c=document.getElementById("model-cards-container");c.innerHTML="";MODEL_CLASSES.forEach(cls=>{const l=document.createElement("div");l.className="model-class-label";l.textContent=cls.label;c.appendChild(l);const g=document.createElement("div");g.className="model-cards";cls.models.forEach(mid=>{const p=MODEL_PROFILES[mid];const card=document.createElement("div");card.className="model-card"+(mid===state.selectedModel?" selected":"");card.dataset.model=mid;let meta=p.vendor?`<span>${p.vendor}</span>`:"<span>Any</span>";if(p.contextWindow)meta+=`<span>${(p.contextWindow/1000).toLocaleString("en")}k ctx</span>`;const tags=p.tags.map(t=>{const tc=t==="reasoning"?"mc-tag-reasoning":t==="code"?"mc-tag-code":t==="speed"||t==="cost"?"mc-tag-speed":t==="open"||t==="local"?"mc-tag-local":"";return`<span class="mc-tag ${tc}">${t}</span>`}).join("");card.innerHTML=`<div class="mc-name">${p.displayName}</div><div class="mc-meta">${meta}</div>${tags?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${tags}</div>`:""}`;card.onclick=()=>selectModel(mid);card.tabIndex=0;card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectModel(mid)}};g.appendChild(card)});c.appendChild(g)})}
 function updateModelLabel(){const p=getProfile();let i=p.displayName;if(p.contextWindow)i+=` | ${(p.contextWindow/1000).toLocaleString("en")}k ctx`;document.getElementById("model-label").textContent=i}
 
@@ -620,7 +634,7 @@ function buildPrompt(){const pr=getProfile();const f={...state.fields};const cl=
 function renderPreview(){const{systemPrompt,userPrompt}=buildPrompt();document.getElementById("preview-system").innerHTML=systemPrompt.trim()?highlightSyntax(systemPrompt):'<span class="preview-empty">Fill in the wizard steps to generate a prompt.</span>';if(state.interactionMode==="api")document.getElementById("preview-user").innerHTML=userPrompt.trim()?highlightSyntax(userPrompt):'<span class="preview-empty">Generated from input and context.</span>';if(state.fields.jsonSchema)document.getElementById("preview-schema").innerHTML=highlightSyntax(JSON.stringify(state.fields.jsonSchema,null,2));const ft=systemPrompt+userPrompt;document.getElementById("char-count").textContent=`Chars: ${ft.length.toLocaleString("en")}`;document.getElementById("token-estimate").textContent=`Tokens: ~${Math.ceil(ft.length/4).toLocaleString("en")}`}
 
 /* ============================================================ OUTPUT STEP ============================================================ */
-function renderOutputStep(){const{systemPrompt,userPrompt}=buildPrompt();const pr=getProfile();document.getElementById("out-system").innerHTML=systemPrompt.trim()?highlightSyntax(systemPrompt):'<span class="preview-empty">No content. Go back and fill in the steps.</span>';const us=document.getElementById("out-user-section");if(state.interactionMode==="chat"){document.getElementById("out-system-label").textContent="Your Prompt";us.style.display="none"}else{document.getElementById("out-system-label").textContent="System Prompt";us.style.display="block";document.getElementById("out-user").innerHTML=userPrompt.trim()?highlightSyntax(userPrompt):'<span class="preview-empty">No user prompt.</span>'}const ss=document.getElementById("out-schema-section");if(state.fields.jsonSchema){ss.style.display="block";document.getElementById("out-schema").innerHTML=highlightSyntax(JSON.stringify(state.fields.jsonSchema,null,2));document.getElementById("btn-dl-schema").style.display="inline-block"}else ss.style.display="none";const ft=systemPrompt+userPrompt;document.getElementById("out-chars").textContent=`Chars: ${ft.length.toLocaleString("en")}`;document.getElementById("out-tokens").textContent=`Tokens: ~${Math.ceil(ft.length/4).toLocaleString("en")}`;let mi=pr.displayName;if(pr.contextWindow)mi+=` | ${(pr.contextWindow/1000).toLocaleString("en")}k ctx`;document.getElementById("out-model").textContent=mi}
+function renderOutputStep(){const{systemPrompt,userPrompt}=buildPrompt();const pr=getProfile();document.getElementById("out-system").innerHTML=systemPrompt.trim()?highlightSyntax(systemPrompt):'<span class="preview-empty">No content. Go back and fill in the steps.</span>';const us=document.getElementById("out-user-section");if(state.interactionMode==="chat"){document.getElementById("out-system-label").textContent="Your Prompt";us.style.display="none"}else{document.getElementById("out-system-label").textContent="System Prompt";us.style.display="block";document.getElementById("out-user").innerHTML=userPrompt.trim()?highlightSyntax(userPrompt):'<span class="preview-empty">No user prompt.</span>'}const ss=document.getElementById("out-schema-section");if(state.fields.jsonSchema){ss.style.display="block";document.getElementById("out-schema").innerHTML=highlightSyntax(JSON.stringify(state.fields.jsonSchema,null,2));document.getElementById("btn-dl-schema").style.display="inline-block"}else ss.style.display="none";const ft=systemPrompt+userPrompt;document.getElementById("out-chars").textContent=`Chars: ${ft.length.toLocaleString("en")}`;document.getElementById("out-tokens").textContent=`Tokens: ~${Math.ceil(ft.length/4).toLocaleString("en")}`;let mi=pr.displayName;if(pr.contextWindow)mi+=` | ${(pr.contextWindow/1000).toLocaleString("en")}k ctx`;document.getElementById("out-model").textContent=mi;const cob=document.getElementById("btn-copy-open");const mu=getModelUrl();if(cob){cob.style.display=mu?"inline-block":"none";if(mu)cob.textContent="Copy & Open "+pr.vendor}}
 
 /* ============================================================ UTILS ============================================================ */
 function highlightSyntax(t){let h=escHtml(t);h=h.replace(/(&lt;\/?[\w_-]+&gt;)/g,'<span class="hl-tag">$1</span>');h=h.replace(/"([\w$_]+)"\s*:/g,'<span class="hl-key">"$1"</span>:');h=h.replace(/:\s*"([^"]*)"/g,': <span class="hl-string">"$1"</span>');return h}
@@ -650,11 +664,11 @@ function lenLabel(l){return{short:S("lShort"),medium:S("lMed"),long:S("lLong")}[
 
 /* ============================================================ LANGUAGE-AWARE BUILDERS ============================================================ */
 function buildClaudeSystem(f,cl){const p=[];const li=LANGUAGES.find(x=>x.id===state.selectedLang);if(li&&li.promptText)p.push(li.promptText);if(f.role)p.push(`<role>\n${f.role}\n</role>`);const i=[];if(f.task)i.push(f.task);if(f.outputFormat!=="markdown")i.push(`${S("outFmt")}: ${fmtLabel(f.outputFormat)}.`);if(f.outputLength)i.push(`${S("len")}: ${lenLabel(f.outputLength)}.`);if(f.tone)i.push(`${S("tone")}: ${f.tone}.`);if(i.length)p.push(`<instructions>\n${i.join("\n")}\n</instructions>`);if(f.constraints||cl)p.push(`<rules>\n${[f.constraints,cl].filter(Boolean).join("\n")}\n</rules>`);if(f.jsonSchema)p.push(`<output_schema>\n${JSON.stringify(f.jsonSchema,null,2)}\n</output_schema>`);if(f.fewShotExamples&&f.fewShotExamples.length){const e=f.fewShotExamples.filter(x=>x.input.trim()||x.output.trim()).map(x=>`<example>\n<input>\n${x.input}\n</input>\n<output>\n${x.output}\n</output>\n</example>`).join("\n");if(e)p.push(`<examples>\n${e}\n</examples>`)}return p.join("\n\n")}
-function buildClaudeUser(f){const p=[];if(f.context)p.push(`<context>\n${f.context}\n</context>`);if(f.inputSpec)p.push(`<input>\n${f.inputSpec}\n\n${S("paste")}\n</input>`);return p.join("\n\n")}
+function buildClaudeUser(f){const p=[];if(f.context)p.push(`<context>\n${f.context}\n</context>`);if(f.inputSpec){const ph=state.interactionMode==="api"?`\n\n${S("paste")}`:"";p.push(`<input>\n${f.inputSpec}${ph}\n</input>`)}return p.join("\n\n")}
 function buildMarkdownSystem(f,cl){const p=[];const li=LANGUAGES.find(x=>x.id===state.selectedLang);if(li&&li.promptText)p.push(li.promptText);if(f.role)p.push(`# ${S("role")}\n${f.role}`);const i=[];if(f.task)i.push(f.task);if(f.outputFormat!=="markdown")i.push(`${S("outFmt")}: ${fmtLabel(f.outputFormat)}.`);if(f.outputLength)i.push(`${S("len")}: ${lenLabel(f.outputLength)}.`);if(f.tone)i.push(`${S("tone")}: ${f.tone}.`);if(i.length)p.push(`# ${S("instr")}\n${i.join("\n")}`);if(f.constraints)p.push(`# ${S("rules")}\n${f.constraints}`);if(cl)p.push(`# ${S("guide")}\n${cl}`);if(f.jsonSchema)p.push("# "+S("outSchema")+"\n```json\n"+JSON.stringify(f.jsonSchema,null,2)+"\n```");if(f.fewShotExamples&&f.fewShotExamples.length){const e=f.fewShotExamples.filter(x=>x.input.trim()||x.output.trim()).map((x,n)=>`### ${S("exN")} ${n+1}\n**${S("input")}:**\n${x.input}\n\n**${S("expOut")}:**\n${x.output}`).join("\n\n");if(e)p.push(`# ${S("ex")}\n${e}`)}return p.join("\n\n")}
-function buildMarkdownUser(f){const p=[];if(f.context)p.push(`## ${S("ctx")}\n${f.context}`);if(f.inputSpec)p.push(`## ${S("input")}\n${f.inputSpec}\n\n${S("paste")}`);return p.join("\n\n")}
+function buildMarkdownUser(f){const p=[];if(f.context)p.push(`## ${S("ctx")}\n${f.context}`);if(f.inputSpec){const ph=state.interactionMode==="api"?`\n\n${S("paste")}`:"";p.push(`## ${S("input")}\n${f.inputSpec}${ph}`)}return p.join("\n\n")}
 function buildPlainSystem(f,cl){const p=[];const li=LANGUAGES.find(x=>x.id===state.selectedLang);if(li&&li.promptText)p.push(li.promptText);if(f.role)p.push(`${S("youAre")}: ${f.role}`);const i=[];if(f.task)i.push(f.task);if(f.outputFormat!=="markdown")i.push(`${S("outFmt")}: ${fmtLabel(f.outputFormat)}.`);if(f.outputLength)i.push(`${S("len")}: ${lenLabel(f.outputLength)}.`);if(f.tone)i.push(`${S("tone")}: ${f.tone}.`);if(i.length)p.push(`${S("task")}:\n${i.join("\n")}`);if(f.constraints)p.push(`${S("rules")}:\n${f.constraints}`);if(cl)p.push(`${S("rules")}:\n${cl}`);if(f.jsonSchema)p.push(`JSON:\n${JSON.stringify(f.jsonSchema,null,2)}`);if(f.fewShotExamples&&f.fewShotExamples.length){const e=f.fewShotExamples.filter(x=>x.input.trim()||x.output.trim()).map(x=>`${S("input")}: ${x.input}\n${S("expOut")}: ${x.output}`).join("\n\n");if(e)p.push(`${S("ex")}:\n${e}`)}return p.join("\n\n")}
-function buildPlainUser(f){const p=[];if(f.context)p.push(f.context);if(f.inputSpec)p.push(S("input")+" ("+f.inputSpec+"):\n\n"+S("paste"));return p.join("\n\n")}
+function buildPlainUser(f){const p=[];if(f.context)p.push(f.context);if(f.inputSpec){const ph=state.interactionMode==="api"?"\n\n"+S("paste"):"";p.push(S("input")+" ("+f.inputSpec+"):"+ph)}return p.join("\n\n")}
 
 /* ============================================================ CONSTRAINT CHECKLIST ============================================================ */
 const CONSTRAINT_ITEMS=[
@@ -713,11 +727,89 @@ const TEMPLATES=[
 ];
 state.selectedTemplate=null;
 
+const TPL_I18N={
+"code-review":{
+  no:{role:"Du er en senior programvareutvikler som utfører grundig kodegjennomgang.",task:"Gjennomgå den oppgitte koden. For hvert problem: beskriv problemet, forklar hvorfor det er viktig, og foreslå en konkret løsning. Prioriter: korrekthet, sikkerhet, ytelse, lesbarhet."},
+  es:{role:"Eres un ingeniero de software senior realizando una revisión exhaustiva de código.",task:"Revisa el código proporcionado. Para cada problema encontrado, indica el problema, explica por qué importa y sugiere una corrección concreta. Prioriza: corrección, seguridad, rendimiento, legibilidad."},
+  fr:{role:"Tu es un ingénieur logiciel senior effectuant une revue de code approfondie.",task:"Examine le code fourni. Pour chaque problème trouvé, décris le problème, explique pourquoi c'est important et propose une correction concrète. Priorise : exactitude, sécurité, performance, lisibilité."},
+  de:{role:"Du bist ein erfahrener Software-Ingenieur, der ein gründliches Code-Review durchführt.",task:"Überprüfe den bereitgestellten Code. Beschreibe für jedes Problem das Problem, erkläre warum es wichtig ist, und schlage eine konkrete Lösung vor. Priorisiere: Korrektheit, Sicherheit, Performance, Lesbarkeit."},
+  pt:{role:"Você é um engenheiro de software sênior realizando uma revisão completa de código.",task:"Revise o código fornecido. Para cada problema encontrado, descreva o problema, explique por que é importante e sugira uma correção concreta. Priorize: correção, segurança, desempenho, legibilidade."}},
+"text-rewrite":{
+  no:{role:"Du er en dyktig redaktør som forbedrer tekstens klarhet uten å endre forfatterens mening eller stemme.",task:"Skriv om den oppgitte teksten slik at den blir klarere, mer konsis og bedre strukturert. Bevar den opprinnelige meningen og intensjonen. Hvis tonen trenger justering, tilpass til angitt måltone."},
+  es:{role:"Eres un editor experto que mejora la claridad del texto sin cambiar el significado o la voz del autor.",task:"Reescribe el texto proporcionado para que sea más claro, conciso y mejor estructurado. Preserva el significado e intención original. Si el tono necesita ajuste, adáptalo al tono objetivo especificado."},
+  fr:{role:"Tu es un éditeur qualifié qui améliore la clarté du texte sans changer le sens ou la voix de l'auteur.",task:"Réécris le texte fourni pour qu'il soit plus clair, concis et mieux structuré. Préserve le sens et l'intention d'origine. Si le ton doit être ajusté, adapte-le au ton cible spécifié."},
+  de:{role:"Du bist ein erfahrener Lektor, der die Klarheit von Texten verbessert, ohne die Bedeutung oder Stimme des Autors zu verändern.",task:"Schreibe den bereitgestellten Text um, damit er klarer, prägnanter und besser strukturiert ist. Bewahre die ursprüngliche Bedeutung und Absicht. Falls der Ton angepasst werden muss, orientiere dich am angegebenen Zielton."},
+  pt:{role:"Você é um editor habilidoso que melhora a clareza do texto sem alterar o significado ou a voz do autor.",task:"Reescreva o texto fornecido para que fique mais claro, conciso e melhor estruturado. Preserve o significado e a intenção original. Se o tom precisar de ajuste, adapte ao tom-alvo especificado."}},
+"summarize":{
+  no:{role:"Du er ekspert på å trekke ut og kondensere den viktigste informasjonen fra dokumenter.",task:"Oppsummer den oppgitte teksten. Start med den viktigste konklusjonen, deretter dekk nøkkelpunktene. Utelat fyllstoff og tangentielle detaljer.",tone:"Nøytral, faktabasert"},
+  es:{role:"Eres un experto en extraer y condensar la información más importante de documentos.",task:"Resume el texto proporcionado. Comienza con la conclusión más importante, luego cubre los puntos clave. Omite relleno y detalles tangenciales.",tone:"Neutral, factual"},
+  fr:{role:"Tu es un expert dans l'extraction et la condensation des informations les plus importantes des documents.",task:"Résume le texte fourni. Commence par la conclusion la plus importante, puis couvre les points clés. Omets le remplissage et les détails tangentiels.",tone:"Neutre, factuel"},
+  de:{role:"Du bist Experte darin, die wichtigsten Informationen aus Dokumenten zu extrahieren und zusammenzufassen.",task:"Fasse den bereitgestellten Text zusammen. Beginne mit der wichtigsten Erkenntnis, dann behandle die Kernpunkte. Lasse Füllmaterial und nebensächliche Details weg.",tone:"Neutral, sachlich"},
+  pt:{role:"Você é especialista em extrair e condensar as informações mais importantes de documentos.",task:"Resuma o texto fornecido. Comece com a conclusão mais importante, depois cubra os pontos-chave. Omita preenchimento e detalhes tangenciais.",tone:"Neutro, factual"}},
+"data-extraction":{
+  no:{role:"Du er et presist dataekstraksjonssystem som gir strukturert JSON.",task:"Ekstraher de forespurte feltene fra den oppgitte teksten. Hvis et felt ikke finnes i kilden, bruk null. Aldri anta eller gjett verdier som ikke er eksplisitt nevnt."},
+  es:{role:"Eres un sistema preciso de extracción de datos que produce JSON estructurado.",task:"Extrae los campos solicitados del texto proporcionado. Si un campo no está presente en la fuente, usa null. Nunca inferir ni adivinar valores que no estén explícitamente declarados."},
+  fr:{role:"Tu es un système d'extraction de données précis qui produit du JSON structuré.",task:"Extrais les champs demandés du texte fourni. Si un champ n'est pas présent dans la source, utilise null. N'infère ni ne devine jamais des valeurs qui ne sont pas explicitement déclarées."},
+  de:{role:"Du bist ein präzises Datenextraktionssystem, das strukturiertes JSON ausgibt.",task:"Extrahiere die angeforderten Felder aus dem bereitgestellten Text. Wenn ein Feld in der Quelle nicht vorhanden ist, verwende null. Leite niemals Werte ab, die nicht explizit angegeben sind."},
+  pt:{role:"Você é um sistema preciso de extração de dados que produz JSON estruturado.",task:"Extraia os campos solicitados do texto fornecido. Se um campo não estiver presente na fonte, use null. Nunca inferir ou adivinhar valores que não estejam explicitamente declarados."}},
+"qa-docs":{
+  no:{role:"Du er en kunnskapsrik assistent som besvarer spørsmål basert strengt på de oppgitte dokumentene.",task:"Besvar brukerens spørsmål kun basert på informasjonen i den oppgitte konteksten. Siter relevante deler av kildematerialet. Hvis svaret ikke finnes i konteksten, si det.",tone:"Hjelpsom, presis"},
+  es:{role:"Eres un asistente experto que responde preguntas basándose estrictamente en los documentos proporcionados.",task:"Responde la pregunta del usuario usando solo la información del contexto proporcionado. Cita las partes relevantes del material fuente. Si la respuesta no está en el contexto, dilo.",tone:"Útil, preciso"},
+  fr:{role:"Tu es un assistant compétent qui répond aux questions en se basant strictement sur les documents fournis.",task:"Réponds à la question de l'utilisateur en utilisant uniquement les informations du contexte fourni. Cite les parties pertinentes du matériel source. Si la réponse n'est pas dans le contexte, dis-le.",tone:"Utile, précis"},
+  de:{role:"Du bist ein sachkundiger Assistent, der Fragen streng auf Basis der bereitgestellten Dokumente beantwortet.",task:"Beantworte die Frage des Benutzers nur mit den Informationen aus dem bereitgestellten Kontext. Zitiere die relevanten Teile des Quellmaterials. Wenn die Antwort nicht im Kontext zu finden ist, sage das.",tone:"Hilfreich, präzise"},
+  pt:{role:"Você é um assistente experiente que responde perguntas baseando-se estritamente nos documentos fornecidos.",task:"Responda a pergunta do usuário usando apenas as informações do contexto fornecido. Cite as partes relevantes do material fonte. Se a resposta não estiver no contexto, diga isso.",tone:"Útil, preciso"}},
+"classification":{
+  no:{role:"Du er et klassifiseringssystem som tildeler etiketter til inndata.",task:"Klassifiser den oppgitte inputen i en av de spesifiserte kategoriene. Gi kun etiketten og en setning som begrunnelse. Hvis inputen ikke passer i noen kategori, si det."},
+  es:{role:"Eres un sistema de clasificación que asigna etiquetas a datos de entrada.",task:"Clasifica la entrada proporcionada en una de las categorías especificadas. Produce solo la etiqueta y una oración de justificación. Si la entrada no encaja en ninguna categoría, dilo."},
+  fr:{role:"Tu es un système de classification qui attribue des étiquettes aux données d'entrée.",task:"Classe l'entrée fournie dans l'une des catégories spécifiées. Produis uniquement l'étiquette et une phrase de justification. Si l'entrée ne correspond à aucune catégorie, dis-le."},
+  de:{role:"Du bist ein Klassifizierungssystem, das Eingabedaten Labels zuweist.",task:"Klassifiziere die bereitgestellte Eingabe in eine der angegebenen Kategorien. Gib nur das Label und einen Satz als Begründung aus. Wenn die Eingabe in keine Kategorie passt, sage das."},
+  pt:{role:"Você é um sistema de classificação que atribui rótulos a dados de entrada.",task:"Classifique a entrada fornecida em uma das categorias especificadas. Produza apenas o rótulo e uma frase de justificativa. Se a entrada não se encaixar em nenhuma categoria, diga isso."}},
+"email-draft":{
+  no:{role:"Du er en profesjonell kommunikasjonsskribent som tilpasser tone og kontekst presist.",task:"Skriv en melding basert på den beskrevne situasjonen. Tilpass formalitetsnivå og relasjonskontext. Vær tydelig på eventuell handlingsoppfordring.",tone:"Profesjonell, tydelig"},
+  es:{role:"Eres un escritor de comunicación profesional que adapta tono y contexto con precisión.",task:"Redacta un mensaje basado en la situación descrita. Adapta el nivel de formalidad y el contexto de la relación. Sé claro sobre cualquier llamada a la acción.",tone:"Profesional, claro"},
+  fr:{role:"Tu es un rédacteur de communication professionnelle qui adapte le ton et le contexte avec précision.",task:"Rédige un message basé sur la situation décrite. Adapte le niveau de formalité et le contexte de la relation. Sois clair sur tout appel à l'action.",tone:"Professionnel, clair"},
+  de:{role:"Du bist ein professioneller Kommunikationstexter, der Ton und Kontext präzise anpasst.",task:"Verfasse eine Nachricht basierend auf der beschriebenen Situation. Passe den Formalitätsgrad und Beziehungskontext an. Sei klar bei jeder Handlungsaufforderung.",tone:"Professionell, klar"},
+  pt:{role:"Você é um redator de comunicação profissional que adapta tom e contexto com precisão.",task:"Redija uma mensagem baseada na situação descrita. Adapte o nível de formalidade e o contexto da relação. Seja claro sobre qualquer chamada à ação.",tone:"Profissional, claro"}},
+"creative":{
+  no:{role:"Du er en kreativ forfatter med en særegen, engasjerende stil.",task:"Skriv det forespurte innholdet. Fokuser på levende, spesifikke detaljer fremfor abstrakte generaliseringer. Vis, ikke fortell. Bruk naturlig rytme med variert setningslengde."},
+  es:{role:"Eres un escritor creativo con un estilo distintivo y cautivador.",task:"Escribe el contenido solicitado. Enfócate en detalles vívidos y específicos en lugar de generalidades abstractas. Muestra, no cuentes. Usa un ritmo natural con longitud de oraciones variada."},
+  fr:{role:"Tu es un écrivain créatif avec un style distinctif et captivant.",task:"Écris le contenu demandé. Concentre-toi sur des détails vivants et spécifiques plutôt que des généralités abstraites. Montre, ne raconte pas. Utilise un rythme naturel avec des longueurs de phrases variées."},
+  de:{role:"Du bist ein kreativer Autor mit einem unverwechselbaren, fesselnden Stil.",task:"Schreibe den gewünschten Inhalt. Konzentriere dich auf lebendige, spezifische Details statt abstrakter Verallgemeinerungen. Zeigen, nicht erzählen. Verwende einen natürlichen Rhythmus mit variierender Satzlänge."},
+  pt:{role:"Você é um escritor criativo com um estilo distinto e envolvente.",task:"Escreva o conteúdo solicitado. Foque em detalhes vívidos e específicos em vez de generalidades abstratas. Mostre, não conte. Use ritmo natural com comprimento de frases variado."}},
+"translation":{
+  no:{role:"Du er en profesjonell oversetter som bevarer mening, tone og register på tvers av språk.",task:"Oversett den oppgitte teksten. Bevar den opprinnelige tonen, formalitetsnivået og stilistiske valgene. Håndter idiomatiske uttrykk naturlig fremfor bokstavelig. Hvis et begrep ikke har direkte ekvivalent, bruk det nærmeste naturlige uttrykket og noter det kort.",tone:"Tilpass kildetekstens register"},
+  es:{role:"Eres un traductor profesional que preserva significado, tono y registro entre idiomas.",task:"Traduce el texto proporcionado. Preserva el tono original, nivel de formalidad y elecciones estilísticas. Maneja expresiones idiomáticas de forma natural. Si un término no tiene equivalente directo, usa la expresión natural más cercana y anótalo brevemente.",tone:"Igualar el registro del texto fuente"},
+  fr:{role:"Tu es un traducteur professionnel qui préserve le sens, le ton et le registre entre les langues.",task:"Traduis le texte fourni. Préserve le ton original, le niveau de formalité et les choix stylistiques. Traite les expressions idiomatiques naturellement. Si un terme n'a pas d'équivalent direct, utilise l'expression naturelle la plus proche et note-le brièvement.",tone:"Correspondre au registre du texte source"},
+  de:{role:"Du bist ein professioneller Übersetzer, der Bedeutung, Ton und Register sprachübergreifend bewahrt.",task:"Übersetze den bereitgestellten Text. Bewahre den Originalton, das Formalitätsniveau und die stilistischen Entscheidungen. Behandle idiomatische Ausdrücke natürlich. Wenn ein Begriff kein direktes Äquivalent hat, verwende den nächsten natürlichen Ausdruck und notiere es kurz.",tone:"Register des Quelltexts beibehalten"},
+  pt:{role:"Você é um tradutor profissional que preserva significado, tom e registro entre idiomas.",task:"Traduza o texto fornecido. Preserve o tom original, nível de formalidade e escolhas estilísticas. Trate expressões idiomáticas naturalmente. Se um termo não tiver equivalente direto, use a expressão natural mais próxima e anote brevemente.",tone:"Corresponder ao registro do texto fonte"}},
+"api-assistant":{
+  no:{role:"Du er en hjelpsom assistent for [beskriv produkt/tjeneste]. Du hjelper brukere med [beskriv omfang].",task:"Besvar brukerspørsmål innenfor ditt kompetanseområde. Vær konsis og hjelpsom. Hvis brukerens forespørsel er utenfor ditt område, omdiriger høflig.",tone:"Vennlig, profesjonell, konsis"},
+  es:{role:"Eres un asistente útil para [describir producto/servicio]. Ayudas a los usuarios con [describir alcance].",task:"Responde preguntas de los usuarios dentro de tu área de experiencia. Sé conciso y útil. Si la solicitud del usuario está fuera de tu alcance, redirige cortésmente.",tone:"Amigable, profesional, conciso"},
+  fr:{role:"Tu es un assistant utile pour [décrire produit/service]. Tu aides les utilisateurs avec [décrire portée].",task:"Réponds aux questions des utilisateurs dans ton domaine d'expertise. Sois concis et utile. Si la demande de l'utilisateur est hors de ton champ, redirige poliment.",tone:"Amical, professionnel, concis"},
+  de:{role:"Du bist ein hilfreicher Assistent für [Produkt/Service beschreiben]. Du hilfst Benutzern mit [Umfang beschreiben].",task:"Beantworte Benutzerfragen in deinem Fachgebiet. Sei prägnant und hilfreich. Wenn die Anfrage außerhalb deines Bereichs liegt, leite höflich weiter.",tone:"Freundlich, professionell, prägnant"},
+  pt:{role:"Você é um assistente útil para [descrever produto/serviço]. Você ajuda os usuários com [descrever escopo].",task:"Responda perguntas dos usuários dentro da sua área de expertise. Seja conciso e útil. Se a solicitação do usuário estiver fora do seu escopo, redirecione educadamente.",tone:"Amigável, profissional, conciso"}}
+};
+
+state.selectedTemplate=null;
+
+function getTemplateFields(t){
+  const lang=state.selectedLang;
+  const tr=TPL_I18N[t.id];
+  const f={...t.fields};
+  if(tr&&tr[lang]){
+    if(tr[lang].role)f.role=tr[lang].role;
+    if(tr[lang].task)f.task=tr[lang].task;
+    if(tr[lang].tone)f.tone=tr[lang].tone;
+  }
+  return f;
+}
+
 function applyTemplate(id){
   const t=TEMPLATES.find(x=>x.id===id);if(!t)return;
   state.selectedTemplate=id;
-  /* Fill fields */
-  Object.keys(t.fields).forEach(k=>{state.fields[k]=t.fields[k]});
+  /* Fill fields with language-aware content */
+  const f=getTemplateFields(t);
+  Object.keys(f).forEach(k=>{state.fields[k]=f[k]});
   /* Set checklist (enhancements) */
   CHECKLIST_ITEMS.forEach(i=>{state.checklist[i.id]=t.checklist.includes(i.id)});
   /* Set constraints */
@@ -731,7 +823,6 @@ function applyTemplate(id){
   const len=document.getElementById("field-outputLength");if(len)len.value=state.fields.outputLength;
   /* Re-render affected UI */
   renderTemplates();renderChecklist();renderConstraints();renderOutputStyle();renderPreview();renderStepsBar();toggleSchemaBuilder();
-  document.getElementById("btn-reset").style.display="";
 }
 
 function resetAll(){
@@ -746,7 +837,6 @@ function resetAll(){
   const len=document.getElementById("field-outputLength");if(len)len.value="medium";
   schemaFields=[];
   renderTemplates();renderChecklist();renderConstraints();renderOutputStyle();renderFewShotExamples();renderPreview();renderStepsBar();toggleSchemaBuilder();
-  document.getElementById("btn-reset").style.display="none";
 }
 
 function renderTemplates(){
@@ -832,7 +922,7 @@ function buildPrompt(){const pr=getProfile();const f={...state.fields};const ct=
 function isStepCompleted(n){const f=state.fields;switch(n){case 1:return true;case 2:return!!f.role.trim();case 3:return!!f.task.trim();case 4:return!!f.inputSpec.trim();case 5:return!!f.tone.trim()||f.outputFormat!=="markdown"||f.outputLength!=="medium"||Object.values(state.outputStyle).some(v=>v);case 6:return!!f.constraints.trim()||Object.values(state.constraintChecklist).some(v=>v);case 7:return Object.values(state.checklist).some(v=>v);case 8:return f.fewShotExamples.length>0&&f.fewShotExamples.some(e=>e.input.trim()||e.output.trim());default:return false}}
 function startWizard(){state.wizardStarted=true;document.getElementById("intro-page").classList.add("hidden");document.getElementById("steps-bar").classList.remove("hidden");document.getElementById("main-content").classList.remove("hidden");renderStepsBar();renderWizardStep();updateHints();renderModeNotices();renderTemplates();renderChecklist();renderConstraints();renderOutputStyle();renderFewShotExamples();renderPreview();updateModelLabel()}
 
-function goToIntro(){document.getElementById("intro-page").classList.remove("hidden");document.getElementById("steps-bar").classList.add("hidden");document.getElementById("main-content").classList.add("hidden");document.getElementById("main-content").classList.remove("full-width");document.getElementById("preview").style.display=""}
+function goToIntro(){state.currentStep=1;document.getElementById("intro-page").classList.remove("hidden");document.getElementById("steps-bar").classList.add("hidden");document.getElementById("main-content").classList.add("hidden");document.getElementById("main-content").classList.remove("full-width");document.getElementById("preview").style.display=""}
 
 /* Fix tips — tool applies structure automatically, tips should be about content */
 (function(){var a="Structure is applied automatically. ";var m;
