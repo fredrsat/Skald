@@ -383,7 +383,7 @@ const LANGUAGES = [
 
 /* ============================================================ MODEL PROFILES ============================================================ */
 const MODEL_CLASSES = [
-  { id:"anthropic", label:"Anthropic", models:["claude-opus-4","claude-sonnet-4","claude-haiku-3.5"] },
+  { id:"anthropic", label:"Anthropic", models:["claude-opus-4.6","claude-sonnet-4.6","claude-haiku-4.5"] },
   { id:"openai", label:"OpenAI", models:["gpt-4.1","gpt-4.1-mini","gpt-4.1-nano","o3","o4-mini","gpt-4o","gpt-4o-mini"] },
   { id:"google", label:"Google", models:["gemini-2.5-pro","gemini-2.5-flash","gemini-2.0-flash"] },
   { id:"meta", label:"Meta (open-source)", models:["llama-4-maverick","llama-4-scout","llama-3.3-70b","llama-3.1-405b"] },
@@ -398,21 +398,21 @@ function mp(id,name,vendor,ctx,struct,reasoning,tags,tips){return{id,displayName
 
 const MODEL_PROFILES = {
   // Anthropic
-  "claude-opus-4":     mp("claude-opus-4","Claude Opus 4","Anthropic",200000,"xml",true,["reasoning","code"],{
+  "claude-opus-4.6":   mp("claude-opus-4.6","Claude Opus 4.6","Anthropic",1000000,"xml",true,["reasoning","code"],{
     role:["Opus is highly capable — a precise role helps it focus.","Use the system prompt for role definition; Opus follows it closely."],
     task:["Don't instruct step-by-step — Opus does this automatically with extended thinking.","Focus on <em>what</em> you want, not <em>how</em> to get there.","For complex tasks, state the goal and constraints, then trust the model."],
-    input:["Structure input with XML tags like <code>&lt;input&gt;</code>.","Opus handles 200k context well — put documents first, query last."],
+    input:["Structure input with XML tags like <code>&lt;input&gt;</code>.","Opus handles 1M context — put documents first, query last."],
     output:["Be explicit about format. For JSON: include schema in <code>&lt;output_schema&gt;</code>.","Opus tends to be thorough — specify length to control verbosity."],
     constraints:["Opus follows instructions closely. Use <code>&lt;rules&gt;</code> tags.","Positive framing works best, but negative constraints are also well understood."],
     fewShot:["Opus often needs fewer examples than smaller models.","Put examples in <code>&lt;examples&gt;</code> tags with <code>&lt;example&gt;</code> per pair."]}),
-  "claude-sonnet-4":   mp("claude-sonnet-4","Claude Sonnet 4","Anthropic",200000,"xml",false,["balanced","code"],{
+  "claude-sonnet-4.6": mp("claude-sonnet-4.6","Claude Sonnet 4.6","Anthropic",1000000,"xml",false,["balanced","code"],{
     role:["Claude responds well to clearly defined roles in the system prompt.","Be specific about expertise area and communication style."],
     task:["XML tags like <code>&lt;instructions&gt;</code> and <code>&lt;context&gt;</code> significantly improve precision.","Break complex tasks into clear sub-sections within the prompt."],
     input:["Wrap input in clear XML tags, e.g. <code>&lt;input&gt;</code>.","Separate data from instructions to prevent confusion."],
     output:["Be explicit about format. For JSON: include schema as <code>&lt;output_schema&gt;</code>.","Specify structure: headings, bullet points, or narrative."],
     constraints:["Positive framing preferred, but negative instructions also work.","Use <code>&lt;rules&gt;</code> tags for clear boundary-setting."],
     fewShot:["2-3 examples in <code>&lt;examples&gt;</code> tags for best effect.","Vary examples to show the range of expected behavior."]}),
-  "claude-haiku-3.5":  mp("claude-haiku-3.5","Claude Haiku 3.5","Anthropic",200000,"xml",false,["speed","cost"],{
+  "claude-haiku-4.5":  mp("claude-haiku-4.5","Claude Haiku 4.5","Anthropic",200000,"xml",false,["speed","cost"],{
     role:["Keep role descriptions concise — Haiku is optimized for speed."],
     task:["Be direct and specific. Haiku performs best with clear, focused instructions.","Avoid over-specifying — simpler prompts produce faster, better results."],
     input:["XML tags help but keep structure minimal for speed."],
@@ -520,7 +520,7 @@ const MODEL_PROFILES = {
 };
 
 const MODEL_URLS={
-  "claude-opus-4":"https://claude.ai/new","claude-sonnet-4":"https://claude.ai/new","claude-haiku-3.5":"https://claude.ai/new",
+  "claude-opus-4.6":"https://claude.ai/new","claude-sonnet-4.6":"https://claude.ai/new","claude-haiku-4.5":"https://claude.ai/new",
   "gpt-4.1":"https://chatgpt.com/","gpt-4.1-mini":"https://chatgpt.com/","gpt-4.1-nano":"https://chatgpt.com/",
   "o3":"https://chatgpt.com/","o4-mini":"https://chatgpt.com/","gpt-4o":"https://chatgpt.com/","gpt-4o-mini":"https://chatgpt.com/",
   "gemini-2.5-pro":"https://gemini.google.com/app","gemini-2.5-flash":"https://gemini.google.com/app","gemini-2.0-flash":"https://gemini.google.com/app",
@@ -570,7 +570,7 @@ const CHECKLIST_ITEMS=[
 
 /* ============================================================ STATE ============================================================ */
 const STEPS=[{num:1,title:"Setup",hk:null},{num:2,title:"Role",hk:"role"},{num:3,title:"Task",hk:"task"},{num:4,title:"Input",hk:"input"},{num:5,title:"Output",hk:"output"},{num:6,title:"Constraints",hk:"constraints"},{num:7,title:"Enhancements",hk:null},{num:8,title:"Examples",hk:"fewShot"},{num:9,title:"Prompt",hk:null}];
-const state={selectedModel:"claude-sonnet-4",interactionMode:"chat",selectedLang:"en",currentStep:1,wizardStarted:false,fields:{role:"",task:"",context:"",inputSpec:"",fewShotExamples:[],outputFormat:"markdown",outputLength:"medium",tone:"",constraints:"",jsonSchema:null},checklist:{}};
+const state={selectedModel:"claude-sonnet-4.6",interactionMode:"chat",selectedLang:"en",currentStep:1,wizardStarted:false,fields:{role:"",task:"",context:"",inputSpec:"",fewShotExamples:[],outputFormat:"markdown",outputLength:"medium",tone:"",constraints:"",jsonSchema:null},checklist:{}};
 CHECKLIST_ITEMS.forEach(i=>{state.checklist[i.id]=i.defaultOn});
 function getProfile(){return MODEL_PROFILES[state.selectedModel]||MODEL_PROFILES["custom"]}
 /* fmtLabel/lenLabel defined in LANGUAGE STRINGS section below */
@@ -918,9 +918,9 @@ function goToIntro(){state.currentStep=1;document.getElementById("intro-page").c
 
 /* Fix tips — tool applies structure automatically, tips should be about content */
 (function(){var a="Structure is applied automatically. ";var m;
-m=MODEL_PROFILES["claude-opus-4"];if(m){m.tips.input=[a+"Describe input type, format, and constraints.","Opus handles 200k context — put documents first, query last."];m.tips.constraints=["Be specific about boundaries. Both positive and negative framing work."];m.tips.fewShot=["Opus often needs fewer examples than smaller models.","Vary examples to cover edge cases."]}
-m=MODEL_PROFILES["claude-sonnet-4"];if(m){m.tips.input=[a+"Describe your input clearly.","Separate different types of data in your description."];m.tips.task=[a+"Focus on clear, specific task description.","Break complex tasks into clear sub-sections."];m.tips.constraints=["Both positive and negative framing work. Be specific about rules."];m.tips.fewShot=["2-3 varied examples work best.","Show the range of expected behavior."]}
-m=MODEL_PROFILES["claude-haiku-3.5"];if(m){m.tips.input=["Keep input descriptions concise — Haiku is speed-optimized. "+a.trim()]}
+m=MODEL_PROFILES["claude-opus-4.6"];if(m){m.tips.input=[a+"Describe input type, format, and constraints.","Opus handles 1M context — put documents first, query last."];m.tips.constraints=["Be specific about boundaries. Both positive and negative framing work."];m.tips.fewShot=["Opus often needs fewer examples than smaller models.","Vary examples to cover edge cases."]}
+m=MODEL_PROFILES["claude-sonnet-4.6"];if(m){m.tips.input=[a+"Describe your input clearly.","Separate different types of data in your description."];m.tips.task=[a+"Focus on clear, specific task description.","Break complex tasks into clear sub-sections."];m.tips.constraints=["Both positive and negative framing work. Be specific about rules."];m.tips.fewShot=["2-3 varied examples work best.","Show the range of expected behavior."]}
+m=MODEL_PROFILES["claude-haiku-4.5"];if(m){m.tips.input=["Keep input descriptions concise — Haiku is speed-optimized. "+a.trim()]}
 m=MODEL_PROFILES["gpt-4.1"];if(m){m.tips.input=[a+"Describe format and constraints clearly.","For long documents, mention expected length and format."];m.tips.fewShot=["3-5 examples establish patterns well.","Vary inputs to show range."]}
 })();
 
