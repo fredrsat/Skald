@@ -383,13 +383,14 @@ const LANGUAGES = [
 
 /* ============================================================ MODEL PROFILES ============================================================ */
 const MODEL_CLASSES = [
-  { id:"anthropic", label:"Anthropic", models:["claude-opus-4.6","claude-sonnet-4.6","claude-haiku-4.5"] },
-  { id:"openai", label:"OpenAI", models:["gpt-4.1","gpt-4.1-mini","gpt-4.1-nano","o3","o4-mini","gpt-4o","gpt-4o-mini"] },
-  { id:"google", label:"Google", models:["gemini-2.5-pro","gemini-2.5-flash","gemini-2.0-flash"] },
-  { id:"meta", label:"Meta (open-source)", models:["llama-4-maverick","llama-4-scout","llama-3.3-70b","llama-3.1-405b"] },
-  { id:"mistral", label:"Mistral (open-source)", models:["mistral-large","mistral-small","codestral"] },
-  { id:"deepseek", label:"DeepSeek (open-source)", models:["deepseek-v3","deepseek-r1"] },
-  { id:"other", label:"Other", models:["qwen-2.5-72b","phi-4","custom"] }
+  { id:"anthropic", label:"Anthropic", models:["claude-opus-4.7","claude-sonnet-4.6","claude-haiku-4.5"] },
+  { id:"openai", label:"OpenAI", models:["gpt-5.5","gpt-5.5-thinking"] },
+  { id:"google", label:"Google", models:["gemini-3.1-pro","gemini-3.1-flash-lite"] },
+  { id:"xai", label:"xAI", models:["grok-4"] },
+  { id:"meta", label:"Meta (open-source)", models:["llama-4-maverick","llama-4-scout"] },
+  { id:"mistral", label:"Mistral (open-source)", models:["mistral-large-3","mistral-small-4","codestral"] },
+  { id:"deepseek", label:"DeepSeek (open-source)", models:["deepseek-v4","deepseek-r1"] },
+  { id:"other", label:"Other", models:["qwen-3.6-27b","phi-4-reasoning","custom"] }
 ];
 
 function mp(id,name,vendor,ctx,struct,reasoning,tags,tips){return{id,displayName:name,vendor,contextWindow:ctx,preferredStructure:struct,isReasoning:reasoning,tags,tips,
@@ -398,16 +399,16 @@ function mp(id,name,vendor,ctx,struct,reasoning,tags,tips){return{id,displayName
 
 const MODEL_PROFILES = {
   // Anthropic
-  "claude-opus-4.6":   mp("claude-opus-4.6","Claude Opus 4.6","Anthropic",1000000,"xml",true,["reasoning","code"],{
+  "claude-opus-4.7":   mp("claude-opus-4.7","Claude Opus 4.7","Anthropic",1000000,"xml",true,["reasoning","code"],{
     role:["Opus is highly capable — a precise role helps it focus.","Use the system prompt for role definition; Opus follows it closely."],
-    task:["Don't instruct step-by-step — Opus does this automatically with extended thinking.","Focus on <em>what</em> you want, not <em>how</em> to get there.","For complex tasks, state the goal and constraints, then trust the model."],
+    task:["Don't instruct step-by-step — Opus uses adaptive thinking automatically.","Focus on <em>what</em> you want, not <em>how</em> to get there.","For complex tasks, state the goal and constraints, then trust the model."],
     input:["Structure input with XML tags like <code>&lt;input&gt;</code>.","Opus handles 1M context — put documents first, query last."],
     output:["Be explicit about format. For JSON: include schema in <code>&lt;output_schema&gt;</code>.","Opus tends to be thorough — specify length to control verbosity."],
     constraints:["Opus follows instructions closely. Use <code>&lt;rules&gt;</code> tags.","Positive framing works best, but negative constraints are also well understood."],
     fewShot:["Opus often needs fewer examples than smaller models.","Put examples in <code>&lt;examples&gt;</code> tags with <code>&lt;example&gt;</code> per pair."]}),
-  "claude-sonnet-4.6": mp("claude-sonnet-4.6","Claude Sonnet 4.6","Anthropic",1000000,"xml",false,["balanced","code"],{
+  "claude-sonnet-4.6": mp("claude-sonnet-4.6","Claude Sonnet 4.6","Anthropic",1000000,"xml",true,["balanced","code"],{
     role:["Claude responds well to clearly defined roles in the system prompt.","Be specific about expertise area and communication style."],
-    task:["XML tags like <code>&lt;instructions&gt;</code> and <code>&lt;context&gt;</code> significantly improve precision.","Break complex tasks into clear sub-sections within the prompt."],
+    task:["XML tags like <code>&lt;instructions&gt;</code> and <code>&lt;context&gt;</code> significantly improve precision.","Sonnet 4.6 has adaptive thinking — it decides when and how deeply to reason.","Break complex tasks into clear sub-sections within the prompt."],
     input:["Wrap input in clear XML tags, e.g. <code>&lt;input&gt;</code>.","Separate data from instructions to prevent confusion."],
     output:["Be explicit about format. For JSON: include schema as <code>&lt;output_schema&gt;</code>.","Specify structure: headings, bullet points, or narrative."],
     constraints:["Positive framing preferred, but negative instructions also work.","Use <code>&lt;rules&gt;</code> tags for clear boundary-setting."],
@@ -420,99 +421,80 @@ const MODEL_PROFILES = {
     constraints:["Short, clear rules. Fewer constraints = better compliance."],
     fewShot:["1-2 short examples are most effective for Haiku."]}),
   // OpenAI
-  "gpt-4.1":          mp("gpt-4.1","GPT-4.1","OpenAI",1047576,"markdown",false,["instruction-following","long-context"],{
-    role:["Put role in system prompt. GPT-4.1 has strong instruction adherence — be explicit.","Define expertise, tone, and behavioral boundaries clearly."],
-    task:["Be explicit — avoid vague phrasing. GPT-4.1 follows instructions literally.","Use markdown structure (headers, lists) for complex instructions.","For agentic tasks, provide clear tool-use instructions."],
-    input:["Use markdown headers or delimiters (---) to separate sections.","For long documents, structure with clear section labels."],
-    output:["For JSON: use <code>json_schema</code> response format via API.","GPT-4.1 is very literal — specify exactly the format you want."],
-    constraints:["Be direct: \"You MUST NOT ...\" for hard constraints.","GPT-4.1 follows restrictions reliably — state them clearly."],
+  "gpt-5.5":           mp("gpt-5.5","GPT-5.5","OpenAI",1000000,"markdown",false,["instruction-following","long-context"],{
+    role:["Put role in system prompt. GPT-5.5 has strong instruction adherence.","Define expertise, tone, and behavioral boundaries clearly."],
+    task:["Be explicit — GPT-5.5 follows instructions literally.","Use markdown structure (headers, lists) for complex instructions.","For agentic tasks, provide clear tool-use instructions."],
+    input:["Use markdown headers or delimiters (---) to separate sections.","GPT-5.5 handles 1M context — structure with clear section labels."],
+    output:["For JSON: use <code>json_schema</code> response format via API.","Specify exactly the format you want."],
+    constraints:["Be direct: \"You MUST NOT ...\" for hard constraints.","GPT-5.5 follows restrictions reliably — state them clearly."],
     fewShot:["## Examples heading with Input:/Output: pairs.","3-5 examples work well for establishing patterns."]}),
-  "gpt-4.1-mini":     mp("gpt-4.1-mini","GPT-4.1 Mini","OpenAI",1047576,"markdown",false,["balanced","cost"],{
-    role:["System prompt for role. Mini follows instructions well."],
-    task:["Clear, direct instructions. Very similar to GPT-4.1 behavior."],input:["Markdown headers to separate sections."],
-    output:["Specify format explicitly. Supports JSON schema via API."],constraints:["Direct constraints work well."],fewShot:["2-3 examples are usually sufficient."]}),
-  "gpt-4.1-nano":     mp("gpt-4.1-nano","GPT-4.1 Nano","OpenAI",1047576,"markdown",false,["speed","cost"],{
-    role:["Keep role brief. Nano is optimized for speed and cost."],
-    task:["Simple, focused instructions. One task at a time."],input:["Keep structure minimal."],
-    output:["Simple format instructions work best."],constraints:["Short rules only."],fewShot:["1-2 very clear examples."]}),
-  "o3":               mp("o3","o3","OpenAI",200000,"markdown",true,["reasoning","math","code"],{
-    role:["Keep role description minimal for reasoning models."],
-    task:["State the goal directly. o3 reasons internally — don't scaffold the thinking process.","Avoid chain-of-thought instructions — they interfere with internal reasoning.","Best for complex math, science, and multi-step reasoning tasks."],
-    input:["Provide all necessary information. o3 reasons deeply over the full context."],
-    output:["Specify desired format clearly. o3 may produce verbose reasoning otherwise."],
-    constraints:["Keep constraints simple and direct.","Don't over-prompt — o3 is sensitive to instruction overload."],
+  "gpt-5.5-thinking":  mp("gpt-5.5-thinking","GPT-5.5 Thinking","OpenAI",1000000,"markdown",true,["reasoning","math","code"],{
+    role:["Keep role description minimal for reasoning mode."],
+    task:["State the goal directly. Thinking mode reasons internally — don't scaffold the process.","Avoid chain-of-thought instructions — they interfere with internal reasoning.","Best for complex math, science, and multi-step reasoning tasks."],
+    input:["Provide all necessary information. The model reasons deeply over the full context."],
+    output:["Specify desired format clearly to control output."],
+    constraints:["Keep constraints simple and direct.","Don't over-prompt — reasoning mode is sensitive to instruction overload."],
     fewShot:["Start with zero-shot. Add examples only if needed — they can degrade reasoning performance."]}),
-  "o4-mini":          mp("o4-mini","o4-mini","OpenAI",200000,"markdown",true,["reasoning","speed"],{
-    role:["Brief role description."],
-    task:["Direct goal statement. o4-mini reasons internally.","Good for reasoning tasks that need faster response times."],
-    input:["Clear, structured input."],output:["Specify format to control output."],
-    constraints:["Simple, direct rules."],fewShot:["Zero-shot preferred. Add examples sparingly."]}),
-  "gpt-4o":           mp("gpt-4o","GPT-4o","OpenAI",128000,"markdown",false,["multimodal","balanced"],{
-    role:["System prompt for role. GPT-4o is fast and good at following instructions."],
-    task:["Clear, direct phrasing. Avoid ambiguity.","Good for multimodal tasks (text + images)."],
-    input:["Markdown formatting works well."],output:["Specify format explicitly."],
-    constraints:["Positive framing is more reliable than negative."],fewShot:["2-3 examples are usually sufficient."]}),
-  "gpt-4o-mini":      mp("gpt-4o-mini","GPT-4o Mini","OpenAI",128000,"markdown",false,["speed","cost"],{
-    role:["Brief, clear role."],task:["Simple, focused instructions."],input:["Keep it clean."],
-    output:["Simple format specs."],constraints:["Short rules."],fewShot:["1-2 examples."]}),
   // Google
-  "gemini-2.5-pro":   mp("gemini-2.5-pro","Gemini 2.5 Pro","Google",1048576,"markdown",true,["reasoning","long-context","code"],{
+  "gemini-3.1-pro":    mp("gemini-3.1-pro","Gemini 3.1 Pro","Google",1048576,"markdown",true,["reasoning","long-context","code"],{
     role:["Use system prompt for role. Pro handles complex instructions well."],
-    task:["Gemini 2.5 Pro has thinking mode — don't instruct step-by-step.","Strong at reasoning, code, and long-context tasks.","Pick one format (XML or Markdown) and be consistent — never mix."],
+    task:["Gemini 3.1 Pro has adaptive thinking — don't instruct step-by-step.","Strong at reasoning, code, agentic workflows, and long-context tasks.","Pick one format (XML or Markdown) and be consistent — never mix."],
     input:["Structure long inputs with headings. Supports 1M tokens."],
     output:["Specify format and detail level. Pro gives comprehensive answers."],
     constraints:["Be explicit. Pro follows instructions closely."],
     fewShot:["2-3 varied examples. Not needed for reasoning tasks."]}),
-  "gemini-2.5-flash": mp("gemini-2.5-flash","Gemini 2.5 Flash","Google",1048576,"markdown",true,["speed","reasoning","cost"],{
-    role:["System prompt for role. Flash supports thinking mode."],
-    task:["Be concise and direct. Flash balances speed with reasoning."],
+  "gemini-3.1-flash-lite": mp("gemini-3.1-flash-lite","Gemini 3.1 Flash-Lite","Google",1048576,"markdown",false,["speed","cost"],{
+    role:["System prompt for role. Flash-Lite is the most cost-efficient Gemini model."],
+    task:["Be concise and direct. Optimized for high-volume, low-latency tasks."],
     input:["Clear delimiters between instructions and data."],output:["Specify format. Supports JSON mode via API."],
     constraints:["Short, concise constraints."],fewShot:["1-2 examples usually sufficient."]}),
-  "gemini-2.0-flash": mp("gemini-2.0-flash","Gemini 2.0 Flash","Google",1048576,"markdown",false,["speed","cost"],{
-    role:["System prompt for role."],task:["Be concise. Optimized for speed."],input:["Clear delimiters."],
-    output:["Specify format explicitly."],constraints:["Keep it short."],fewShot:["1-2 examples."]}),
+  // xAI
+  "grok-4":            mp("grok-4","Grok 4","xAI",256000,"markdown",true,["reasoning","code"],{
+    role:["Set role in system prompt. Grok 4 handles complex instructions well."],
+    task:["Direct, clear instructions. Strong at reasoning and code.","Has native tool use and real-time search integration."],
+    input:["Markdown structure with clear delimiters."],output:["Specify format explicitly."],
+    constraints:["Clear, direct rules."],fewShot:["2-3 examples work well."]}),
   // Meta
-  "llama-4-maverick": mp("llama-4-maverick","Llama 4 Maverick","Meta",1048576,"plain",false,["multilingual","open"],{
+  "llama-4-maverick":  mp("llama-4-maverick","Llama 4 Maverick","Meta",1048576,"plain",false,["multilingual","open"],{
     role:["Clear, concise role. Maverick is a 17B-active / 400B-total MoE model."],
     task:["Direct instructions work best. Good multilingual support."],input:["Simple formatting."],
     output:["Specify format. JSON requires explicit instruction."],constraints:["Short rules."],fewShot:["2-3 examples help."]}),
-  "llama-4-scout":    mp("llama-4-scout","Llama 4 Scout","Meta",10000000,"plain",false,["long-context","open"],{
+  "llama-4-scout":     mp("llama-4-scout","Llama 4 Scout","Meta",10000000,"plain",false,["long-context","open"],{
     role:["Brief role. Scout is optimized for extremely long context (10M tokens)."],
     task:["Good for long-document analysis. 17B-active / 109B-total MoE."],input:["Can handle very large inputs."],
     output:["Specify format clearly."],constraints:["Keep it concise."],fewShot:["1-2 examples."]}),
-  "llama-3.3-70b":    mp("llama-3.3-70b","Llama 3.3 70B","Meta",128000,"plain",false,["balanced","open"],{
-    role:["Concise role description. 70B dense model."],task:["Direct, concise instructions. Performs well for its size."],
-    input:["Simple formatting works best."],output:["Clear format instructions."],constraints:["Short rules."],fewShot:["2-3 examples."]}),
-  "llama-3.1-405b":   mp("llama-3.1-405b","Llama 3.1 405B","Meta",128000,"plain",false,["quality","open"],{
-    role:["Clear role. Largest open-source dense model."],task:["Can handle complex instructions better than smaller Llama models."],
-    input:["Structure helps with complex tasks."],output:["Specify format."],constraints:["Can follow more detailed rules."],fewShot:["2-3 examples."]}),
   // Mistral
-  "mistral-large":    mp("mistral-large","Mistral Large","Mistral",128000,"markdown",false,["multilingual","reasoning"],{
-    role:["Role in system prompt. Strong multilingual support."],task:["Clear, structured instructions. Mistral Large handles complex tasks."],
+  "mistral-large-3":   mp("mistral-large-3","Mistral Large 3","Mistral",256000,"markdown",false,["multilingual","reasoning"],{
+    role:["Role in system prompt. 41B-active / 675B-total MoE model with strong multilingual support."],
+    task:["Clear, structured instructions. Handles complex tasks and reasoning well."],
     input:["Markdown or delimiters for structure."],output:["Specify format explicitly."],
     constraints:["Direct, clear rules."],fewShot:["2-3 examples work well."]}),
-  "mistral-small":    mp("mistral-small","Mistral Small","Mistral",32000,"markdown",false,["speed","cost"],{
-    role:["Brief role."],task:["Concise instructions. Efficient for simpler tasks."],input:["Simple formatting."],
-    output:["Keep format instructions simple."],constraints:["Short rules."],fewShot:["1-2 examples."]}),
+  "mistral-small-4":   mp("mistral-small-4","Mistral Small 4","Mistral",262000,"markdown",false,["balanced","cost"],{
+    role:["System prompt for role. Unifies reasoning, multimodal, and coding capabilities."],
+    task:["Direct instructions. 6B-active / 119B-total MoE — fast and versatile."],input:["Markdown formatting works well."],
+    output:["Specify format explicitly."],constraints:["Clear, direct rules."],fewShot:["2-3 examples."]}),
   "codestral":        mp("codestral","Codestral","Mistral",256000,"markdown",false,["code"],{
     role:["Set up as a coding assistant."],task:["Specialized for code generation, review, and debugging.","Be specific about language, framework, and style requirements."],
     input:["Provide code context clearly."],output:["Specify code style, comments, and documentation expectations."],
     constraints:["Language-specific rules and linting preferences."],fewShot:["Code examples are very effective for Codestral."]}),
   // DeepSeek
-  "deepseek-v3":      mp("deepseek-v3","DeepSeek V3","DeepSeek",128000,"markdown",false,["code","reasoning","open"],{
-    role:["Clear role definition. Strong at code and reasoning."],task:["Direct instructions. Good at complex technical tasks."],
-    input:["Structure with headers or delimiters."],output:["Specify format. Strong JSON compliance."],
+  "deepseek-v4":       mp("deepseek-v4","DeepSeek V4","DeepSeek",1000000,"markdown",false,["code","reasoning","open"],{
+    role:["Clear role definition. Strong at code and reasoning."],
+    task:["Direct instructions. V4 handles 1M context with hybrid attention.","Available as V4-Pro (49B active / 1.6T total) and V4-Flash (13B active / 284B total)."],
+    input:["Structure with headers or delimiters. Handles very long inputs efficiently."],output:["Specify format. Strong JSON compliance."],
     constraints:["Clear rules work well."],fewShot:["2-3 examples."]}),
-  "deepseek-r1":      mp("deepseek-r1","DeepSeek R1","DeepSeek",128000,"markdown",true,["reasoning","math","open"],{
-    role:["Minimal role for reasoning tasks."],task:["State the problem directly. R1 reasons internally like o3.","Don't ask it to think step-by-step — it does this automatically."],
+  "deepseek-r1":       mp("deepseek-r1","DeepSeek R1","DeepSeek",128000,"markdown",true,["reasoning","math","open"],{
+    role:["Minimal role for reasoning tasks."],task:["State the problem directly. R1 reasons internally.","Don't ask it to think step-by-step — it does this automatically."],
     input:["Provide complete information for reasoning."],output:["Specify output format to control verbosity."],
     constraints:["Simple constraints. Don't over-prompt."],fewShot:["Zero-shot preferred for reasoning."]}),
   // Other
-  "qwen-2.5-72b":     mp("qwen-2.5-72b","Qwen 2.5 72B","Alibaba",128000,"markdown",false,["multilingual","code","open"],{
-    role:["Clear role. Strong multilingual model."],task:["Direct instructions. Good at code and multilingual tasks."],
-    input:["Markdown structure."],output:["Specify format."],constraints:["Clear rules."],fewShot:["2-3 examples."]}),
-  "phi-4":            mp("phi-4","Phi-4","Microsoft",16000,"plain",false,["reasoning","compact"],{
-    role:["Brief role. Phi-4 is a small but capable model (14B)."],task:["Concise, focused instructions. Surprisingly strong reasoning for its size."],
+  "qwen-3.6-27b":      mp("qwen-3.6-27b","Qwen 3.6 27B","Alibaba",262144,"markdown",false,["code","multilingual","open"],{
+    role:["Clear role. Strong at agentic coding and multilingual tasks."],
+    task:["Direct instructions. Dense 27B model that outperforms much larger MoE models on coding."],
+    input:["Markdown structure. Native 262K context, extensible to 1M with YaRN."],output:["Specify format."],constraints:["Clear rules."],fewShot:["2-3 examples."]}),
+  "phi-4-reasoning":   mp("phi-4-reasoning","Phi-4 Reasoning","Microsoft",16000,"plain",true,["reasoning","compact"],{
+    role:["Brief role. Phi-4 Reasoning is a 14B model that rivals larger models on reasoning."],
+    task:["Concise, focused instructions. Strong at math, science, and multi-step reasoning."],
     input:["Keep input concise — limited context window."],output:["Simple format instructions."],constraints:["Short rules."],fewShot:["1-2 examples."]}),
   "custom":           mp("custom","Custom model","",null,"markdown",false,[],{
     role:["Define a clear role."],task:["Be explicit about what you want."],input:["Describe input format clearly."],
@@ -520,12 +502,12 @@ const MODEL_PROFILES = {
 };
 
 const MODEL_URLS={
-  "claude-opus-4.6":"https://claude.ai/new","claude-sonnet-4.6":"https://claude.ai/new","claude-haiku-4.5":"https://claude.ai/new",
-  "gpt-4.1":"https://chatgpt.com/","gpt-4.1-mini":"https://chatgpt.com/","gpt-4.1-nano":"https://chatgpt.com/",
-  "o3":"https://chatgpt.com/","o4-mini":"https://chatgpt.com/","gpt-4o":"https://chatgpt.com/","gpt-4o-mini":"https://chatgpt.com/",
-  "gemini-2.5-pro":"https://gemini.google.com/app","gemini-2.5-flash":"https://gemini.google.com/app","gemini-2.0-flash":"https://gemini.google.com/app",
-  "deepseek-v3":"https://chat.deepseek.com/","deepseek-r1":"https://chat.deepseek.com/",
-  "mistral-large":"https://chat.mistral.ai/","mistral-small":"https://chat.mistral.ai/","codestral":"https://chat.mistral.ai/"
+  "claude-opus-4.7":"https://claude.ai/new","claude-sonnet-4.6":"https://claude.ai/new","claude-haiku-4.5":"https://claude.ai/new",
+  "gpt-5.5":"https://chatgpt.com/","gpt-5.5-thinking":"https://chatgpt.com/",
+  "gemini-3.1-pro":"https://gemini.google.com/app","gemini-3.1-flash-lite":"https://gemini.google.com/app",
+  "grok-4":"https://grok.com/",
+  "deepseek-v4":"https://chat.deepseek.com/","deepseek-r1":"https://chat.deepseek.com/",
+  "mistral-large-3":"https://chat.mistral.ai/","mistral-small-4":"https://chat.mistral.ai/","codestral":"https://chat.mistral.ai/"
 };
 function getModelUrl(){return MODEL_URLS[state.selectedModel]||null}
 function copyAndOpen(){
@@ -543,9 +525,9 @@ const BEST_PRACTICES=[
   {cat:"Clarity",title:"Explain WHY behind instructions, not just WHAT",desc:"Adding context helps the model generalize to edge cases you didn't anticipate.",rationale:"Both Anthropic and Google recommend this. Example: \"never use ellipses because this will be read by a text-to-speech engine\" — the model can now apply this intelligently.",applies:"all"},
   {cat:"Clarity",title:"Don't flatter the model",desc:'"You\'re the best at this" doesn\'t improve quality and can increase inaccurate behavior.',rationale:"OpenAI rolled back a GPT-4o update (April 2025) due to excessive sycophancy. Research shows flattery increases hallucination. Source: arXiv 2411.15287.",applies:"all"},
   {cat:"Task Design",title:"One task per prompt",desc:"Multiple unrelated tasks degrade quality across all of them.",rationale:"Universally recommended by Anthropic (prompt chaining), OpenAI, and Google. Sequential single-task prompts produce measurably better results.",applies:"all"},
-  {cat:"Task Design",title:"Don't over-prompt newer models",desc:'"CRITICAL: YOU MUST..." causes overtriggering in newer models. Calibrate intensity.',rationale:"Anthropic and OpenAI both flag this for Claude 4.x and GPT-4.1+. Where you once wrote \"CRITICAL: You MUST...\", now write \"Use this when...\".",applies:"all"},
-  {cat:"Reasoning Models",title:"Don't ask reasoning models to \"think step by step\"",desc:"They do this automatically. Explicit instruction can degrade quality.",rationale:"OpenAI warns against this for o1/o3/o4. Same for Claude Opus with extended thinking and Gemini Pro thinking mode. Source: OpenAI reasoning best practices.",applies:"reasoning"},
-  {cat:"Reasoning Models",title:"Keep prompts simpler for reasoning models",desc:"Complex scaffolding that helps standard models can hinder reasoning models.",rationale:"Reasoning models find better paths when unconstrained. Heavy instruction frameworks that improve Sonnet or GPT-4o can limit Opus or o3. Source: OpenAI, Anthropic.",applies:"reasoning"},
+  {cat:"Task Design",title:"Don't over-prompt newer models",desc:'"CRITICAL: YOU MUST..." causes overtriggering in newer models. Calibrate intensity.',rationale:"Anthropic and OpenAI both flag this for Claude 4.x and GPT-5.x. Where you once wrote \"CRITICAL: You MUST...\", now write \"Use this when...\".",applies:"all"},
+  {cat:"Reasoning Models",title:"Don't ask reasoning models to \"think step by step\"",desc:"They do this automatically. Explicit instruction can degrade quality.",rationale:"OpenAI warns against this for GPT-5.5 Thinking. Same for Claude Opus with adaptive thinking and Gemini Pro thinking mode. Source: OpenAI reasoning best practices.",applies:"reasoning"},
+  {cat:"Reasoning Models",title:"Keep prompts simpler for reasoning models",desc:"Complex scaffolding that helps standard models can hinder reasoning models.",rationale:"Reasoning models find better paths when unconstrained. Heavy instruction frameworks that improve Sonnet or GPT-5.5 can limit Opus or GPT-5.5 Thinking. Source: OpenAI, Anthropic.",applies:"reasoning"},
 ];
 
 /* ============================================================ CHECKLIST ============================================================ */
@@ -918,10 +900,10 @@ function goToIntro(){state.currentStep=1;document.getElementById("intro-page").c
 
 /* Fix tips — tool applies structure automatically, tips should be about content */
 (function(){var a="Structure is applied automatically. ";var m;
-m=MODEL_PROFILES["claude-opus-4.6"];if(m){m.tips.input=[a+"Describe input type, format, and constraints.","Opus handles 1M context — put documents first, query last."];m.tips.constraints=["Be specific about boundaries. Both positive and negative framing work."];m.tips.fewShot=["Opus often needs fewer examples than smaller models.","Vary examples to cover edge cases."]}
-m=MODEL_PROFILES["claude-sonnet-4.6"];if(m){m.tips.input=[a+"Describe your input clearly.","Separate different types of data in your description."];m.tips.task=[a+"Focus on clear, specific task description.","Break complex tasks into clear sub-sections."];m.tips.constraints=["Both positive and negative framing work. Be specific about rules."];m.tips.fewShot=["2-3 varied examples work best.","Show the range of expected behavior."]}
+m=MODEL_PROFILES["claude-opus-4.7"];if(m){m.tips.input=[a+"Describe input type, format, and constraints.","Opus handles 1M context — put documents first, query last."];m.tips.constraints=["Be specific about boundaries. Both positive and negative framing work."];m.tips.fewShot=["Opus often needs fewer examples than smaller models.","Vary examples to cover edge cases."]}
+m=MODEL_PROFILES["claude-sonnet-4.6"];if(m){m.tips.input=[a+"Describe your input clearly.","Separate different types of data in your description."];m.tips.task=[a+"Focus on clear, specific task description.","Sonnet 4.6 has adaptive thinking — it decides when and how deeply to reason.","Break complex tasks into clear sub-sections."];m.tips.constraints=["Both positive and negative framing work. Be specific about rules."];m.tips.fewShot=["2-3 varied examples work best.","Show the range of expected behavior."]}
 m=MODEL_PROFILES["claude-haiku-4.5"];if(m){m.tips.input=["Keep input descriptions concise — Haiku is speed-optimized. "+a.trim()]}
-m=MODEL_PROFILES["gpt-4.1"];if(m){m.tips.input=[a+"Describe format and constraints clearly.","For long documents, mention expected length and format."];m.tips.fewShot=["3-5 examples establish patterns well.","Vary inputs to show range."]}
+m=MODEL_PROFILES["gpt-5.5"];if(m){m.tips.input=[a+"Describe format and constraints clearly.","For long documents, mention expected length and format."];m.tips.fewShot=["3-5 examples establish patterns well.","Vary inputs to show range."]}
 })();
 
 document.addEventListener("DOMContentLoaded",init);

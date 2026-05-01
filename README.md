@@ -8,7 +8,7 @@ Open `prompt-builder.html` in any browser and start building.
 
 **Guided wizard** -- 9-step flow from role definition to final prompt, with model-specific tips at each step.
 
-**20+ model profiles** -- Claude (Opus, Sonnet, Haiku), GPT-4.1/4o/o3/o4-mini, Gemini 2.5/2.0, Llama 4/3, Mistral/Codestral, DeepSeek V3/R1, Qwen, Phi-4, and custom. Each profile controls prompt structure (XML tags, Markdown, plain text), best practice hints, and context window info.
+**18 model profiles** -- Claude (Opus 4.7, Sonnet 4.6, Haiku 4.5), GPT-5.5/5.5 Thinking, Gemini 3.1 Pro/Flash-Lite, Grok 4, Llama 4 Maverick/Scout, Mistral Large 3/Small 4/Codestral, DeepSeek V4/R1, Qwen 3.6, Phi-4 Reasoning, and custom. Each profile controls prompt structure (XML tags, Markdown, plain text), best practice hints, and context window info.
 
 **10 templates** -- Pre-configured starting points for common use cases:
 - Code Review, Text Rewrite, Summarization
@@ -29,7 +29,7 @@ Open `prompt-builder.html` in any browser and start building.
 
 **Two modes** -- Chat mode (single combined prompt for browser UIs) and API mode (separate system/user messages with input placeholder).
 
-**Copy & Open** -- Copies the finished prompt and opens the selected model's web interface (Claude.ai, ChatGPT, Gemini, DeepSeek, Mistral) in a new tab. Just paste.
+**Copy & Open** -- Copies the finished prompt and opens the selected model's web interface (Claude.ai, ChatGPT, Gemini, Grok, DeepSeek, Mistral) in a new tab. Just paste.
 
 **Live preview** -- Real-time prompt preview with character/token estimate, section copy, and full export as `.txt`.
 
