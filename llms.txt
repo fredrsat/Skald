@@ -2,7 +2,7 @@
 
 > Interactive, browser-based tool for building optimized LLM prompts — a single HTML file with no backend, no dependencies, and no build step.
 
-Skald is a guided 9-step wizard that assembles a prompt from role, context, task, constraints, output format, and style choices, adapting structure and tips to the selected model. It ships 22 model profiles (Claude, GPT, Gemini, Grok, Llama, Mistral, DeepSeek, GLM, Qwen, Phi, and custom), 10 task templates, research-backed constraint checklists, writing-style corrections for known LLM quirks, a visual JSON Schema builder, and output in 10 languages. Two output modes: chat (one combined prompt) and API (separate system/user messages).
+Skald is a guided 9-step wizard that assembles a prompt from role, context, task, constraints, output format, and style choices, adapting structure and tips to the selected model. It ships 22 model profiles (Claude, GPT, Gemini, Grok, Llama, Mistral, DeepSeek, GLM, Qwen, Phi, and custom), 10 task templates, research-backed constraint checklists, writing-style corrections for known LLM quirks, a visual JSON Schema builder, and output in 9 languages. Two output modes: chat (one combined prompt) and API (separate system/user messages).
 
 Everything — CSS, markup, and all application logic — lives in `prompt-builder.html`. State is a vanilla JS object; there are no frameworks, no npm, and no network calls, so it works fully offline over `file://`. To use it, open the file in any browser.
 

@@ -27,7 +27,7 @@ Open `prompt-builder.html` in any browser and start building.
 
 **JSON Schema builder** -- Visual field editor that generates JSON Schema (draft-07) and embeds it in the prompt. Export as `.json`.
 
-**10-language output** -- Prompt structural text, checklist items, and template content translated to English, Norwegian, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean. Switching language updates everything live.
+**9-language output** -- Prompt structural text, checklist items, and template content translated to English, Norwegian, Spanish, French, German, Portuguese, Chinese, Japanese, and Korean. Switching language updates everything live.
 
 **Two modes** -- Chat mode (single combined prompt for browser UIs) and API mode (separate system/user messages with input placeholder).
 
